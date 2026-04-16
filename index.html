@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -578,14 +578,255 @@
     letter-spacing: 0.02em;
   }
 
+  /* ── AI Overview card ────────────────────────────────────────── */
+  .ai-card {
+    border-color: var(--accent);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 60%, color-mix(in srgb, var(--accent) 8%, transparent));
+    pointer-events: none;
+  }
+
+  .ai-loading {
+    display: inline-block;
+    width: 100%;
+    min-height: 60px;
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  #ai-refresh-btn.spinning { opacity: 0.5; pointer-events: none; }
+
+  /* ── Light theme ──────────────────────────────────────────────── */
+  [data-theme="light"] {
+    --bg: #f2f1ec;
+    --surface: #ffffff;
+    --surface2: #eae8e3;
+    --border: #d8d6cf;
+    --accent: #4a8f00;
+    --accent2: #0077aa;
+    --accent3: #b85c00;
+    --accent4: #a81878;
+    --text: #1c1c1a;
+    --muted: #72726c;
+  }
+
+  [data-theme="light"] .tag-mental  { background: #fce8f6; color: var(--accent4); }
+  [data-theme="light"] .tag-physical{ background: #ddf0ff; color: var(--accent2); }
+  [data-theme="light"] .tag-food    { background: #fff0db; color: var(--accent3); }
+  [data-theme="light"] .tag-psych   { background: #e8f5db; color: var(--accent);  }
+  [data-theme="light"] .btn-primary { color: #ffffff; }
+  [data-theme="light"] .btn-danger  { background: #ffe8e8; color: #c02020; border-color: #ffd0d0; }
+  [data-theme="light"] .mood-btn.selected { color: #ffffff; }
+  [data-theme="light"] .toast       { color: #ffffff; }
+  [data-theme="light"] .task-check:checked::after { color: #ffffff; }
+
+  /* ── Mobile top bar ───────────────────────────────────────────── */
+  .mobile-topbar {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    z-index: 100;
+  }
+
+  .mobile-topbar-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+
+  .mobile-topbar-actions { display: flex; gap: 4px; }
+
+  .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    line-height: 1;
+    transition: background 0.15s;
+  }
+  .icon-btn:hover { background: var(--surface2); }
+
+  /* ── Sidebar drawer & backdrop ───────────────────────────────── */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 150;
+  }
+  .sidebar-backdrop.open { display: block; }
+
+  /* ── Settings gear button in sidebar ─────────────────────────── */
+  .settings-sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: var(--font-body);
+    padding: 8px 0;
+    margin-top: 10px;
+    transition: color 0.15s;
+    width: 100%;
+    text-align: left;
+  }
+  .settings-sidebar-btn:hover { color: var(--text); }
+
+  /* ── Settings modal ───────────────────────────────────────────── */
+  .settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 400;
+  }
+  .settings-overlay.hidden { display: none; }
+
+  .settings-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    width: 380px;
+    max-width: 92vw;
+  }
+
+  .settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .settings-header h3 {
+    font-family: var(--font-display);
+    font-size: 22px;
+  }
+
+  .settings-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 22px;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.15s;
+  }
+  .settings-close:hover { color: var(--text); }
+
+  .settings-section-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-row:last-child { border-bottom: none; }
+
+  .settings-row-info { flex: 1; }
+  .settings-row-label { font-size: 14px; color: var(--text); font-weight: 500; }
+  .settings-row-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .theme-pills { display: flex; gap: 6px; }
+
+  .theme-pill {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font-body);
+    font-weight: 500;
+  }
+  .theme-pill:hover { border-color: var(--accent); color: var(--text); }
+  .theme-pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  [data-theme="dark"] .theme-pill.active { color: #0f0f0f; }
+
+  /* ── Mobile media query ───────────────────────────────────────── */
   @media (max-width: 768px) {
-    .shell { grid-template-columns: 1fr; }
-    .sidebar { height: auto; position: static; flex-direction: row; flex-wrap: wrap; padding: 16px; }
-    .sidebar-logo { border-bottom: none; margin-bottom: 0; padding: 0 16px 0 0; }
-    .nav-section { padding: 0; }
-    .main { padding: 24px 20px; }
+    .mobile-topbar { display: flex; }
+
+    body { padding-top: 56px; }
+
+    .shell {
+      grid-template-columns: 1fr;
+      min-height: calc(100vh - 56px);
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      bottom: 0;
+      width: 260px;
+      height: auto;
+      z-index: 200;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+    }
+
+    .sidebar.open { transform: translateX(0); }
+
+    .main {
+      padding: 24px 16px;
+      max-width: 100%;
+    }
+
     .stat-grid { grid-template-columns: 1fr 1fr; }
     .form-row, .form-row-3 { grid-template-columns: 1fr; }
+
+    .page-header h2 { font-size: 26px; }
   }
 </style>
 </head>
@@ -611,6 +852,18 @@
     </div>
   </div>
 </div>
+
+<!-- Mobile top bar -->
+<div class="mobile-topbar">
+  <button class="icon-btn" onclick="openMobileMenu()" aria-label="Open menu">☰</button>
+  <span class="mobile-topbar-title">Health Log</span>
+  <div class="mobile-topbar-actions">
+    <button class="icon-btn" onclick="openSettings()" aria-label="Settings">⚙</button>
+  </div>
+</div>
+
+<!-- Sidebar backdrop (mobile) -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeMobileMenu()"></div>
 
 <div class="shell">
   <!-- Sidebar -->
@@ -659,6 +912,9 @@
         <span id="sidebar-date">—</span>
       </div>
       <div class="sync-status" id="sync-status">Not connected</div>
+      <button class="settings-sidebar-btn" onclick="openSettings()">
+        <span style="font-size:16px">⚙</span> Settings
+      </button>
     </div>
   </nav>
 
@@ -691,6 +947,23 @@
         </div>
       </div>
 
+      <!-- AI Overview -->
+      <div class="card ai-card" id="ai-overview-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">✦</span>
+            <span class="card-title" style="margin-bottom:0">Daily Overview</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="ai-overview-time" style="font-size:11px;color:var(--muted)"></span>
+            <button class="btn btn-ghost btn-sm" id="ai-refresh-btn" onclick="generateAIOverview(true)">Refresh</button>
+          </div>
+        </div>
+        <div id="ai-overview-content" style="font-size:14px;line-height:1.7;color:var(--muted)">
+          Add your Anthropic API key in Settings → AI to enable daily overviews.
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-title">Recent activity</div>
         <div id="recent-feed">
@@ -698,12 +971,9 @@
         </div>
       </div>
 
-      <div style="margin-top:24px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
-        <label style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Open calendar to change date</label>
-        <div style="display:flex;align-items:center;gap:16px">
-          <span id="picker-date-display" style="font-size:15px;font-weight:500;color:var(--text)">—</span>
-          <input type="date" id="dashboard-date-picker" onchange="filterDashboard(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:14px;padding:8px 12px;outline:none;cursor:pointer;margin-bottom:0">
-        </div>
+      <div style="margin-top:16px;display:inline-flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px">
+        <span id="picker-date-display" style="font-size:11px;font-weight:500;color:var(--muted);white-space:nowrap">—</span>
+        <input type="date" id="dashboard-date-picker" onchange="filterDashboard(this.value)" style="background:transparent;border:none;color:var(--text);font-family:var(--font-body);font-size:11px;padding:0;outline:none;cursor:pointer;margin-bottom:0;width:auto">
       </div>
     </div>
 
@@ -1010,6 +1280,57 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Settings modal -->
+<div class="settings-overlay hidden" id="settings-overlay" onclick="handleSettingsOverlayClick(event)">
+  <div class="settings-box">
+    <div class="settings-header">
+      <h3>Settings</h3>
+      <button class="settings-close" onclick="closeSettings()" aria-label="Close">×</button>
+    </div>
+
+    <div class="settings-section-label">Appearance</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Theme</div>
+        <div class="settings-row-sub">Choose your preferred look</div>
+      </div>
+      <div class="theme-pills">
+        <button class="theme-pill active" data-theme-val="dark" onclick="applyTheme('dark')">🌙 Dark</button>
+        <button class="theme-pill" data-theme-val="light" onclick="applyTheme('light')">☀️ Light</button>
+      </div>
+    </div>
+
+    <div class="settings-section-label" style="margin-top:20px">AI</div>
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:10px">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Google Gemini API Key <span style="font-size:10px;background:var(--surface2);color:var(--accent);border:1px solid var(--border);border-radius:10px;padding:1px 7px;letter-spacing:0.04em;font-weight:600">FREE</span></div>
+        <div class="settings-row-sub">Powers the daily AI overview · <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent2)">Get a free key ↗</a></div>
+      </div>
+      <div style="display:flex;gap:8px;width:100%">
+        <input type="password" id="anthropic-key-input" placeholder="AIza…" style="flex:1;margin-bottom:0;font-family:monospace;font-size:12px">
+        <button class="btn btn-ghost btn-sm" onclick="saveAnthropicKey()" style="flex-shrink:0">Save</button>
+      </div>
+      <div id="ai-key-status" style="font-size:12px;color:var(--muted)"></div>
+    </div>
+
+    <div class="settings-section-label" style="margin-top:20px">Data</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">GitHub sync</div>
+        <div class="settings-row-sub" id="settings-sync-info">—</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="reconnectGitHub()">Reconnect</button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Clear all local data</div>
+        <div class="settings-row-sub">Removes everything from this device</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="clearAllData()">Clear</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── GitHub Gist sync ────────────────────────────────────────────
 const GIST_FILENAME = 'health-log-data.json';
@@ -1197,6 +1518,81 @@ function renderAll() {
   renderDashboard();
 }
 
+// ── Theme ─────────────────────────────────────────────────────────
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  document.querySelectorAll('.theme-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.themeVal === theme);
+  });
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('theme') || 'dark';
+  applyTheme(saved);
+}
+
+// ── Settings modal ────────────────────────────────────────────────
+function openSettings() {
+  // Show API key status
+  const keyStatus = document.getElementById('ai-key-status');
+  if (getAnthropicKey()) {
+    keyStatus.style.color = 'var(--accent)';
+    keyStatus.textContent = 'Gemini key saved ✓';
+  } else {
+    keyStatus.style.color = 'var(--muted)';
+    keyStatus.textContent = 'No key saved yet — it\'s free!';
+  }
+
+  const token = getStoredToken();
+  const gistId = getStoredGistId();
+  const syncInfo = document.getElementById('settings-sync-info');
+  if (token && gistId) {
+    syncInfo.textContent = 'Connected · Gist ' + gistId.slice(0, 8) + '…';
+  } else if (token) {
+    syncInfo.textContent = 'Token saved, no gist yet';
+  } else {
+    syncInfo.textContent = 'Not connected';
+  }
+  document.getElementById('settings-overlay').classList.remove('hidden');
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.add('hidden');
+}
+
+function handleSettingsOverlayClick(e) {
+  if (e.target === document.getElementById('settings-overlay')) closeSettings();
+}
+
+function reconnectGitHub() {
+  closeSettings();
+  localStorage.removeItem('gh_token');
+  localStorage.removeItem('gh_gist_id');
+  document.getElementById('setup-overlay').classList.remove('hidden');
+}
+
+function clearAllData() {
+  if (!confirm('This will delete all your local data. Are you sure?')) return;
+  ['journal','selftalk','tasks','workouts','food','sleep'].forEach(k => localStorage.removeItem(k));
+  renderAll();
+  closeSettings();
+  showToast('Local data cleared.');
+}
+
+// ── Mobile menu ───────────────────────────────────────────────────
+function openMobileMenu() {
+  document.querySelector('.sidebar').classList.add('open');
+  document.getElementById('sidebar-backdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileMenu() {
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebar-backdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 // ── Navigation ───────────────────────────────────────────────────
 function navigate(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1206,6 +1602,7 @@ function navigate(id) {
     if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
   });
   if (id === 'dashboard') renderDashboard();
+  closeMobileMenu();
 }
 
 // ── Toast ────────────────────────────────────────────────────────
@@ -1238,6 +1635,7 @@ function saveJournal() {
   selectedMood = '';
   renderJournal();
   showToast('Journal entry saved ✓');
+  scheduleAIUpdate();
 }
 
 function renderJournal() {
@@ -1274,6 +1672,7 @@ function saveSelfTalk() {
   document.getElementById('st-time').value = getCurrentTime();
   renderSelfTalk();
   showToast('Self-talk entry saved ✓');
+  scheduleAIUpdate();
 }
 
 function renderSelfTalk() {
@@ -1357,6 +1756,7 @@ function saveWorkout() {
   document.getElementById('wo-duration').value = '';
   renderWorkouts();
   showToast('Workout logged ✓');
+  scheduleAIUpdate();
 }
 
 function renderWorkouts() {
@@ -1397,6 +1797,7 @@ function saveFood() {
   document.getElementById('food-notes').value = '';
   renderFood();
   showToast('Meal logged ✓');
+  scheduleAIUpdate();
 }
 
 function renderFood() {
@@ -1436,6 +1837,7 @@ function saveSleep() {
   document.getElementById('sleep-notes').value = '';
   renderSleep();
   showToast('Sleep logged ✓');
+  scheduleAIUpdate();
 }
 
 function renderSleep() {
@@ -1500,6 +1902,188 @@ function renderDashboard() {
     </div>`).join('');
 }
 
+// ── AI OVERVIEW ──────────────────────────────────────────────────
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/';
+const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+
+async function callGemini(prompt, key) {
+  let lastErr;
+  for (const model of GEMINI_MODELS) {
+    let status = 0;
+    try {
+      const res = await fetch(`${GEMINI_BASE}${model}:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 350, temperature: 0.75 }
+        })
+      });
+      status = res.status;
+      if (status === 429 || status === 503 || status === 500) {
+        const err = await res.json().catch(() => ({}));
+        lastErr = new Error(err.error?.message || 'Model busy, trying fallback…');
+        continue; // try next model
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || 'API error ' + status);
+      }
+      const data = await res.json();
+      return data.candidates[0].content.parts[0].text.trim();
+    } catch(e) {
+      lastErr = e;
+      if (status === 429 || status === 503 || status === 500) continue;
+      throw e; // non-retryable, bail immediately
+    }
+  }
+  throw lastErr || new Error('All models are busy — try again in a moment.');
+}
+
+function getAnthropicKey() { return localStorage.getItem('gemini_key') || ''; }
+
+function saveAnthropicKey() {
+  const val = document.getElementById('anthropic-key-input').value.trim();
+  const status = document.getElementById('ai-key-status');
+  if (val.length < 20) {
+    status.style.color = '#f56060';
+    status.textContent = 'That doesn\'t look like a valid API key.';
+    return;
+  }
+  localStorage.setItem('gemini_key', val);
+  status.style.color = 'var(--accent)';
+  status.textContent = 'Key saved ✓';
+  document.getElementById('anthropic-key-input').value = '';
+  setTimeout(() => { status.textContent = ''; }, 3000);
+  generateAIOverview(true);
+}
+
+function gatherTodayData(dateStr) {
+  const d = dateStr || currentFilterDate || today();
+  const journal   = DB.get('journal').filter(e => e.date === d);
+  const selftalk  = DB.get('selftalk').filter(e => e.date === d);
+  const workouts  = DB.get('workouts').filter(e => e.date === d);
+  const food      = DB.get('food').filter(e => e.date === d);
+  const sleep     = DB.get('sleep').filter(e => e.date === d);
+  const tasks     = DB.get('tasks');
+  const totalEntries = journal.length + selftalk.length + workouts.length + food.length + sleep.length;
+  return { d, journal, selftalk, workouts, food, sleep, tasks, totalEntries };
+}
+
+function buildOverviewPrompt(data) {
+  const { d, journal, selftalk, workouts, food, sleep, tasks } = data;
+  const dateLabel = new Date(d + 'T12:00:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
+  let sections = [];
+
+  if (journal.length) {
+    sections.push('JOURNAL:\n' + journal.map(e =>
+      `  Mood: ${e.mood || 'not set'} | Entry: ${e.why}${e.notes ? ' | Notes: ' + e.notes : ''}`
+    ).join('\n'));
+  }
+  if (selftalk.length) {
+    sections.push('SELF-TALK:\n' + selftalk.map(e =>
+      `  Type: ${e.type} | Thought: ${e.thought}${e.reframe ? ' | Reframe: ' + e.reframe : ''}`
+    ).join('\n'));
+  }
+  if (workouts.length) {
+    sections.push('WORKOUTS:\n' + workouts.map(e =>
+      `  ${e.type}${e.duration ? ', ' + e.duration + ' min' : ''}, ${e.intensity} intensity, felt: ${e.feel}${e.notes ? ' | Notes: ' + e.notes : ''}`
+    ).join('\n'));
+  }
+  if (food.length) {
+    sections.push('FOOD LOG:\n' + food.map(e =>
+      `  ${e.meal}: ${e.what}${e.cals ? ' (~' + e.cals + ' kcal)' : ''}, felt: ${e.feel}${e.notes ? ' | Notes: ' + e.notes : ''}`
+    ).join('\n'));
+  }
+  if (sleep.length) {
+    sections.push('SLEEP:\n' + sleep.map(e =>
+      `  ${e.hours ? e.hours + 'h sleep' : ''}${e.bed && e.wake ? ', ' + e.bed + ' → ' + e.wake : ''}, quality: ${e.quality}/10, energy: ${e.energy}/10${e.notes ? ' | Notes: ' + e.notes : ''}`
+    ).join('\n'));
+  }
+  const doneTasks  = tasks.filter(t => t.done).length;
+  const openTasks  = tasks.filter(t => !t.done).length;
+  if (tasks.length) sections.push(`PSYCH TASKS: ${doneTasks} done, ${openTasks} still open.`);
+
+  return `You are a warm, concise health coach reviewing Robbie's Health Log for ${dateLabel}.
+
+Here is what has been logged today:
+
+${sections.join('\n\n')}
+
+Write a brief, personalised daily overview (2–3 short paragraphs) that:
+- Acknowledges what Robbie has done or logged today
+- Highlights any interesting patterns or moments worth noting (mood, energy, habits)
+- Offers one gentle, encouraging observation or actionable idea
+- Keeps a warm, direct, non-preachy tone — like a trusted coach, not a wellness app
+
+Keep it under 180 words. Do not use bullet points or headers. Just flowing, natural prose.`;
+}
+
+let aiUpdateTimer = null;
+
+function scheduleAIUpdate() {
+  if (!getAnthropicKey()) return;
+  if (aiUpdateTimer) clearTimeout(aiUpdateTimer);
+  aiUpdateTimer = setTimeout(() => generateAIOverview(false), 3000);
+}
+
+async function generateAIOverview(force = false) {
+  const key = getAnthropicKey();
+  const content = document.getElementById('ai-overview-content');
+  const timeEl  = document.getElementById('ai-overview-time');
+  const btn      = document.getElementById('ai-refresh-btn');
+
+  if (!key) {
+    content.style.color = 'var(--muted)';
+    content.textContent = 'Add your free Gemini API key in Settings → AI to enable daily overviews.';
+    return;
+  }
+
+  const data = gatherTodayData();
+
+  if (!data.totalEntries) {
+    content.style.color = 'var(--muted)';
+    content.textContent = 'Log something today and your AI overview will appear here.';
+    timeEl.textContent = '';
+    return;
+  }
+
+  // Use cache if fresh and not forced
+  const cacheKey = 'ai_overview_' + data.d;
+  if (!force) {
+    const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+    if (cached && cached.entryCount === data.totalEntries) {
+      content.style.color = 'var(--text)';
+      content.textContent = cached.text;
+      timeEl.textContent = 'Updated ' + cached.time;
+      return;
+    }
+  }
+
+  // Show loading state
+  content.innerHTML = '<span class="ai-loading"></span>';
+  timeEl.textContent = '';
+  if (btn) btn.classList.add('spinning');
+
+  try {
+    const text = await callGemini(buildOverviewPrompt(data), key);
+    const time = getCurrentTime();
+
+    content.style.color = 'var(--text)';
+    content.textContent = text;
+    timeEl.textContent = 'Updated ' + time;
+
+    localStorage.setItem(cacheKey, JSON.stringify({ text, time, entryCount: data.totalEntries }));
+  } catch(e) {
+    content.style.color = '#f56060';
+    content.textContent = 'Could not generate overview: ' + e.message;
+    timeEl.textContent = '';
+    localStorage.removeItem(cacheKey); // don't cache errors
+  } finally {
+    if (btn) btn.classList.remove('spinning');
+  }
+}
+
 // ── DELETE ───────────────────────────────────────────────────────
 function deleteEntry(store, id, renderFn) {
   if (!confirm('Delete this entry?')) return;
@@ -1511,6 +2095,7 @@ function deleteEntry(store, id, renderFn) {
 
 // ── INIT ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  initTheme();
   const now = new Date();
   const nowTime = getCurrentTime();
   document.getElementById('sidebar-date').textContent = now.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -1537,6 +2122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (changed) DB.set('tasks', tasks);
 
   renderAll();
+  generateAIOverview(false);
 
   // Check for stored token
   if (getStoredToken()) {
