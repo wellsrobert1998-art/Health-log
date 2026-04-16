@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Log</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --accent: #c8f560;
+    --accent2: #60d4f5;
+    --accent3: #f5a060;
+    --accent4: #f560a8;
+    --text: #f0ede6;
+    --muted: #888;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* Layout */
+  .shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    padding: 0 24px 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .sidebar-logo h1 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--accent);
+    line-height: 1.2;
+  }
+
+  .sidebar-logo p {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .nav-section {
+    padding: 0 16px 24px;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 8px;
+    margin-bottom: 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    color: #aaa;
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--surface2); color: var(--text); font-weight: 500; }
+  .nav-item .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  .nav-item[data-cat="mental"] { color: var(--accent4); }
+  .nav-item[data-cat="psych"] { color: var(--accent); }
+  .nav-item[data-cat="physical"] { color: var(--accent2); }
+  .nav-item[data-cat="food"] { color: var(--accent3); }
+  .nav-item[data-cat="mental"]:hover,
+  .nav-item[data-cat="mental"].active { color: var(--accent4); filter: brightness(1.2); }
+  .nav-item[data-cat="psych"]:hover,
+  .nav-item[data-cat="psych"].active { color: var(--accent); filter: brightness(1.2); }
+  .nav-item[data-cat="physical"]:hover,
+  .nav-item[data-cat="physical"].active { color: var(--accent2); filter: brightness(1.2); }
+  .nav-item[data-cat="food"]:hover,
+  .nav-item[data-cat="food"].active { color: var(--accent3); filter: brightness(1.2); }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .today-chip {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .today-chip span {
+    display: block;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* Main */
+  .main {
+    padding: 40px 48px;
+    max-width: 900px;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Page header */
+  .page-header {
+    margin-bottom: 36px;
+  }
+
+  .page-header h2 {
+    font-family: var(--font-display);
+    font-size: 34px;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+
+  .page-header p {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  /* Form elements */
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.03em;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 16px;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Mood selector */
+  .mood-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .mood-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font-body);
+  }
+
+  .mood-btn:hover { border-color: var(--accent); color: var(--text); }
+  .mood-btn.selected { background: var(--accent); color: #0f0f0f; border-color: var(--accent); font-weight: 600; }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-primary { background: var(--accent); color: #0f0f0f; }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); }
+  .btn-danger { background: #3a1a1a; color: #f56060; border: 1px solid #3a1a1a; }
+  .btn-danger:hover { border-color: #f56060; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+  /* Log entries */
+  .entries-list { margin-top: 20px; }
+
+  .entry {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .entry-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .entry-date {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .entry-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  .entry-body { font-size: 14px; line-height: 1.65; color: #ccc; }
+  .entry-body strong { color: var(--text); font-weight: 600; }
+
+  .entry-actions { margin-top: 12px; display: flex; gap: 8px; }
+
+  /* Task list */
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .task-item:last-child { border-bottom: none; }
+
+  .task-check {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--surface2);
+    transition: all 0.15s;
+  }
+
+  .task-check:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .task-check:checked::after {
+    content: '✓';
+    display: block;
+    text-align: center;
+    font-size: 11px;
+    color: #0f0f0f;
+    font-weight: 800;
+    line-height: 14px;
+  }
+
+  .task-text {
+    font-size: 14px;
+    line-height: 1.5;
+    flex: 1;
+    color: var(--text);
+  }
+
+  .task-text.done {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  /* Energy / sleep sliders */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    margin-bottom: 6px;
+    padding: 0;
+    border: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .slider-val {
+    text-align: center;
+    font-size: 22px;
+    font-family: var(--font-display);
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  /* Dashboard stats */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .stat-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .stat-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+  .stat-value { font-family: var(--font-display); font-size: 32px; line-height: 1; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--accent);
+    color: #0f0f0f;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 12px 22px;
+    border-radius: 8px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Color accents per section */
+  .color-mental { color: var(--accent4); }
+  .color-physical { color: var(--accent2); }
+  .color-food { color: var(--accent3); }
+  .color-psych { color: var(--accent); }
+  .dot-mental { background: var(--accent4); }
+  .dot-physical { background: var(--accent2); }
+  .dot-food { background: var(--accent3); }
+  .dot-psych { background: var(--accent); }
+  .tag-mental { background: #2a1020; color: var(--accent4); }
+  .tag-physical { background: #0f2030; color: var(--accent2); }
+  .tag-food { background: #2a1a00; color: var(--accent3); }
+  .tag-psych { background: #1a2a00; color: var(--accent); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+
+  .recent-item {
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .recent-item:hover {
+    background: var(--surface2);
+    border-color: var(--accent);
+  }
+
+  .task-recurrence {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-left: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--surface);
+  }
+
+  .entry-time {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+
+  /* Sync bar */
+  .sync-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s, opacity 0.4s;
+    z-index: 9999;
+    opacity: 0;
+  }
+  .sync-bar.active { transform: scaleX(1); opacity: 1; }
+
+  .sync-status {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+
+  .sync-status.ok { color: var(--accent); }
+  .sync-status.err { color: #f56060; }
+
+  /* Setup overlay */
+  .setup-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    flex-direction: column;
+  }
+  .setup-overlay.hidden { display: none; }
+
+  .setup-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 48px;
+    max-width: 480px;
+    width: 90%;
+  }
+
+  .setup-box h2 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .setup-box p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .setup-box ol {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 2;
+    margin-bottom: 24px;
+    padding-left: 18px;
+  }
+
+  .setup-box ol a {
+    color: var(--accent2);
+  }
+
+  .setup-box input[type="text"] {
+    font-family: monospace;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 768px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { height: auto; position: static; flex-direction: row; flex-wrap: wrap; padding: 16px; }
+    .sidebar-logo { border-bottom: none; margin-bottom: 0; padding: 0 16px 0 0; }
+    .nav-section { padding: 0; }
+    .main { padding: 24px 20px; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .form-row, .form-row-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sync-bar" id="sync-bar"></div>
+
+<div class="setup-overlay" id="setup-overlay">
+  <div class="setup-box">
+    <h2>Health Log Setup</h2>
+    <p>Your data syncs privately to a GitHub Gist — only you can access it. Enter your GitHub Personal Access Token to get started.</p>
+    <ol>
+      <li>Go to <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a></li>
+      <li>Click <strong>Generate new token (classic)</strong></li>
+      <li>Tick the <strong>gist</strong> scope only</li>
+      <li>Generate and paste your token below</li>
+    </ol>
+    <label>GitHub Personal Access Token</label>
+    <input type="text" id="gh-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="margin-bottom:16px">
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-primary" onclick="submitToken()">Connect</button>
+      <span id="setup-error" style="font-size:13px;color:#f56060"></span>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <h1>Health<br>Log</h1>
+      <p>Your daily tracker</p>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <button class="nav-item active" onclick="navigate('dashboard')">
+        <span class="dot" style="background:#888"></span> Dashboard
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Mental</div>
+      <button class="nav-item" data-cat="mental" onclick="navigate('journal')">
+        <span class="dot dot-mental"></span> Journal
+      </button>
+      <button class="nav-item" data-cat="mental" onclick="navigate('selftalk')">
+        <span class="dot dot-mental"></span> Self-Talk
+      </button>
+      <button class="nav-item" data-cat="psych" onclick="navigate('psych')">
+        <span class="dot dot-psych"></span> Psych Tasks
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Physical</div>
+      <button class="nav-item" data-cat="physical" onclick="navigate('workouts')">
+        <span class="dot dot-physical"></span> Workouts
+      </button>
+      <button class="nav-item" data-cat="food" onclick="navigate('food')">
+        <span class="dot dot-food"></span> Food Log
+      </button>
+      <button class="nav-item" data-cat="physical" onclick="navigate('sleep')">
+        <span class="dot dot-physical"></span> Sleep & Energy
+      </button>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="today-chip">
+        Today
+        <span id="sidebar-date">—</span>
+      </div>
+      <div class="sync-status" id="sync-status">Not connected</div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h2>Good day, Robbie.</h2>
+        <p id="dashboard-subtitle">Your daily snapshot for today</p>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card" onclick="navigate('journal')">
+          <div class="stat-label">Journal entries</div>
+          <div class="stat-value color-mental" id="stat-journal">0</div>
+        </div>
+        <div class="stat-card" onclick="navigate('workouts')">
+          <div class="stat-label">Workouts logged</div>
+          <div class="stat-value color-physical" id="stat-workouts">0</div>
+        </div>
+        <div class="stat-card" onclick="navigate('food')">
+          <div class="stat-label">Meals logged</div>
+          <div class="stat-value color-food" id="stat-meals">0</div>
+        </div>
+        <div class="stat-card" onclick="navigate('psych')">
+          <div class="stat-label">Psych tasks</div>
+          <div class="stat-value color-psych" id="stat-tasks">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Recent activity</div>
+        <div id="recent-feed">
+          <div class="empty-state"><div class="icon">📋</div>Nothing logged yet. Start by adding a journal entry or workout.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px">
+        <label style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Open calendar to change date</label>
+        <div style="display:flex;align-items:center;gap:16px">
+          <span id="picker-date-display" style="font-size:15px;font-weight:500;color:var(--text)">—</span>
+          <input type="date" id="dashboard-date-picker" onchange="filterDashboard(this.value)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:14px;padding:8px 12px;outline:none;cursor:pointer;margin-bottom:0">
+        </div>
+      </div>
+    </div>
+
+    <!-- JOURNAL -->
+    <div class="page" id="page-journal">
+      <div class="page-header">
+        <h2 class="color-mental">Journal</h2>
+        <p>How are you feeling, and why?</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">New entry</div>
+        <div class="form-row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="journal-date">
+          </div>
+          <div>
+            <label>Time</label>
+            <input type="time" id="journal-time">
+          </div>
+        </div>
+        <div>
+          <label>How are you feeling?</label>
+          <div class="mood-row" id="mood-row">
+            <button class="mood-btn" onclick="selectMood(this)">😊 Great</button>
+            <button class="mood-btn" onclick="selectMood(this)">🙂 Good</button>
+            <button class="mood-btn" onclick="selectMood(this)">😐 Neutral</button>
+            <button class="mood-btn" onclick="selectMood(this)">😔 Low</button>
+            <button class="mood-btn" onclick="selectMood(this)">😟 Anxious</button>
+            <button class="mood-btn" onclick="selectMood(this)">😤 Frustrated</button>
+            <button class="mood-btn" onclick="selectMood(this)">😩 Overwhelmed</button>
+          </div>
+        </div>
+        <div>
+          <label>What's going on? (Why do you feel this way?)</label>
+          <textarea id="journal-why" placeholder="Write freely..."></textarea>
+        </div>
+        <div>
+          <label>Anything else on your mind?</label>
+          <textarea id="journal-notes" placeholder="Extra notes, reflections..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveJournal()">Save entry</button>
+      </div>
+
+      <div class="entries-list" id="journal-entries"></div>
+    </div>
+
+    <!-- SELF-TALK -->
+    <div class="page" id="page-selftalk">
+      <div class="page-header">
+        <h2 class="color-mental">Self-Talk</h2>
+        <p>Track and reframe your inner dialogue.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">New entry</div>
+        <div class="form-row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="st-date">
+          </div>
+          <div>
+            <label>Time</label>
+            <input type="time" id="st-time">
+          </div>
+        </div>
+        <div>
+          <label>What did you tell yourself? (The thought)</label>
+          <textarea id="st-thought" placeholder="e.g. I'm not good enough at this..."></textarea>
+        </div>
+        <div>
+          <label>Type of self-talk</label>
+          <select id="st-type">
+            <option value="negative">Negative / critical</option>
+            <option value="positive">Positive / encouraging</option>
+            <option value="neutral">Neutral / observational</option>
+          </select>
+        </div>
+        <div>
+          <label>Reframe — a more balanced or constructive way to see it</label>
+          <textarea id="st-reframe" placeholder="e.g. I'm still learning, and that's okay..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveSelfTalk()">Save entry</button>
+      </div>
+
+      <div class="entries-list" id="st-entries"></div>
+    </div>
+
+    <!-- PSYCH TASKS -->
+    <div class="page" id="page-psych">
+      <div class="page-header">
+        <h2 class="color-psych">Psych Tasks</h2>
+        <p>Things to do or discuss this month with your psychologist.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Add task</div>
+        <div class="form-row-3">
+          <div>
+            <label>Task / topic</label>
+            <input type="text" id="task-text" placeholder="e.g. Discuss sleep patterns">
+          </div>
+          <div>
+            <label>Priority</label>
+            <select id="task-priority">
+              <option value="high">High</option>
+              <option value="med" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div>
+            <label>Recurrence</label>
+            <select id="task-recurrence">
+              <option value="oneoff">One-off</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>Notes (optional)</label>
+          <textarea id="task-notes" placeholder="Context or background..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveTask()">Add task</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">This month's tasks</div>
+        <div id="task-list">
+          <div class="empty-state"><div class="icon">✅</div>No tasks yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKOUTS -->
+    <div class="page" id="page-workouts">
+      <div class="page-header">
+        <h2 class="color-physical">Workouts</h2>
+        <p>Log your training sessions.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Log workout</div>
+        <div class="form-row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="wo-date">
+          </div>
+          <div>
+            <label>Type</label>
+            <select id="wo-type">
+              <option>Strength / weights</option>
+              <option>Cardio / run</option>
+              <option>HIIT</option>
+              <option>Walk</option>
+              <option>Yoga / stretch</option>
+              <option>Swim</option>
+              <option>Cycling</option>
+              <option>Sport</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div>
+            <label>Duration (mins)</label>
+            <input type="number" id="wo-duration" placeholder="45" min="1">
+          </div>
+          <div>
+            <label>Intensity</label>
+            <select id="wo-intensity">
+              <option>Easy</option>
+              <option selected>Moderate</option>
+              <option>Hard</option>
+              <option>Max effort</option>
+            </select>
+          </div>
+          <div>
+            <label>How did you feel after?</label>
+            <select id="wo-feel">
+              <option>💪 Strong</option>
+              <option>😊 Good</option>
+              <option>😐 Okay</option>
+              <option>😓 Exhausted</option>
+              <option>🤕 Sore</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>Notes (exercises, sets, reps, distance, etc.)</label>
+          <textarea id="wo-notes" placeholder="e.g. 3x10 squats @ 80kg, 5km run in 28 min..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveWorkout()">Log workout</button>
+      </div>
+
+      <div class="entries-list" id="workout-entries"></div>
+    </div>
+
+    <!-- FOOD LOG -->
+    <div class="page" id="page-food">
+      <div class="page-header">
+        <h2 class="color-food">Food Log</h2>
+        <p>Track what you're eating.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Log meal</div>
+        <div class="form-row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="food-date">
+          </div>
+          <div>
+            <label>Meal</label>
+            <select id="food-meal">
+              <option>Breakfast</option>
+              <option>Lunch</option>
+              <option>Dinner</option>
+              <option>Snack</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>What did you eat?</label>
+          <textarea id="food-what" placeholder="e.g. Oats with banana and almond butter, black coffee..."></textarea>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Approx. calories (optional)</label>
+            <input type="number" id="food-cals" placeholder="500" min="0">
+          </div>
+          <div>
+            <label>How did it make you feel?</label>
+            <select id="food-feel">
+              <option>😊 Good / energised</option>
+              <option>😐 Fine</option>
+              <option>😮‍💨 Sluggish</option>
+              <option>🤢 Unwell</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>Notes</label>
+          <textarea id="food-notes" placeholder="Cravings, habits, anything worth noting..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveFood()">Log meal</button>
+      </div>
+
+      <div class="entries-list" id="food-entries"></div>
+    </div>
+
+    <!-- SLEEP & ENERGY -->
+    <div class="page" id="page-sleep">
+      <div class="page-header">
+        <h2 class="color-physical">Sleep & Energy</h2>
+        <p>Track rest and daily vitality.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Log today</div>
+        <div class="form-row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="sleep-date">
+          </div>
+          <div>
+            <label>Hours slept</label>
+            <input type="number" id="sleep-hours" placeholder="7.5" min="0" max="24" step="0.5">
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Bedtime</label>
+            <input type="time" id="sleep-bed">
+          </div>
+          <div>
+            <label>Wake time</label>
+            <input type="time" id="sleep-wake">
+          </div>
+        </div>
+
+        <label>Sleep quality: <span id="sleep-qual-val" style="color:var(--accent);font-weight:600">5</span>/10</label>
+        <input type="range" min="1" max="10" value="5" id="sleep-quality" oninput="document.getElementById('sleep-qual-val').textContent=this.value">
+        <div class="slider-labels"><span>Terrible</span><span>Average</span><span>Perfect</span></div>
+
+        <label>Energy levels today: <span id="energy-val" style="color:var(--accent2);font-weight:600">5</span>/10</label>
+        <input type="range" min="1" max="10" value="5" id="energy-level" oninput="document.getElementById('energy-val').textContent=this.value">
+        <div class="slider-labels"><span>Drained</span><span>Okay</span><span>High</span></div>
+
+        <div>
+          <label>Notes (dreams, interruptions, anything notable)</label>
+          <textarea id="sleep-notes" placeholder="e.g. Woke twice around 3am, vivid dreams..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveSleep()">Save</button>
+      </div>
+
+      <div class="entries-list" id="sleep-entries"></div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── GitHub Gist sync ────────────────────────────────────────────
+const GIST_FILENAME = 'health-log-data.json';
+const GIST_DESCRIPTION = 'Health Log Data';
+const GH_API = 'https://api.github.com';
+
+function getStoredToken() { return localStorage.getItem('gh_token') || ''; }
+function getStoredGistId() { return localStorage.getItem('gh_gist_id') || ''; }
+
+// ── Data store ──────────────────────────────────────────────────
+const DB = {
+  get(key) { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } },
+  set(key, val) { localStorage.setItem(key, JSON.stringify(val)); },
+  push(key, item) { const arr = DB.get(key); arr.unshift(item); DB.set(key, arr); scheduleSync(); },
+  remove(key, id) { DB.set(key, DB.get(key).filter(i => i.id !== id)); scheduleSync(); }
+};
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const today = () => new Date().toISOString().slice(0, 10);
+const getCurrentTime = () => new Date().toTimeString().slice(0, 5);
+const fmtDate = d => { if (!d) return ''; const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`; };
+
+let currentFilterDate = today();
+let syncTimer = null;
+let isSyncing = false;
+
+// ── Sync bar ─────────────────────────────────────────────────────
+function showSyncBar() {
+  const bar = document.getElementById('sync-bar');
+  bar.classList.add('active');
+  setTimeout(() => bar.classList.remove('active'), 1200);
+}
+
+function setSyncStatus(msg, type) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'sync-status' + (type ? ' ' + type : '');
+}
+
+// ── GitHub Gist helpers ──────────────────────────────────────────
+async function ghFetch(path, options = {}) {
+  const token = getStoredToken();
+  return fetch(GH_API + path, {
+    ...options,
+    headers: {
+      Authorization: 'Bearer ' + token,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    }
+  });
+}
+
+async function findOrCreateGist() {
+  // Try to find existing gist
+  const res = await ghFetch('/gists');
+  if (!res.ok) return null;
+  const gists = await res.json();
+  const existing = gists.find(g => g.description === GIST_DESCRIPTION && g.files[GIST_FILENAME]);
+  if (existing) {
+    localStorage.setItem('gh_gist_id', existing.id);
+    return existing.id;
+  }
+  // Create new gist
+  const createRes = await ghFetch('/gists', {
+    method: 'POST',
+    body: JSON.stringify({
+      description: GIST_DESCRIPTION,
+      public: false,
+      files: { [GIST_FILENAME]: { content: JSON.stringify({}) } }
+    })
+  });
+  if (!createRes.ok) return null;
+  const newGist = await createRes.json();
+  localStorage.setItem('gh_gist_id', newGist.id);
+  return newGist.id;
+}
+
+// ── Token setup ──────────────────────────────────────────────────
+async function submitToken() {
+  const token = document.getElementById('gh-token-input').value.trim();
+  const errEl = document.getElementById('setup-error');
+  if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
+    errEl.textContent = 'That doesn\'t look like a valid token.';
+    return;
+  }
+  errEl.textContent = 'Connecting...';
+  localStorage.setItem('gh_token', token);
+
+  // Verify token works
+  const res = await fetch(GH_API + '/user', {
+    headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' }
+  });
+  if (!res.ok) {
+    errEl.textContent = 'Token rejected. Check it and try again.';
+    localStorage.removeItem('gh_token');
+    return;
+  }
+
+  const user = await res.json();
+  errEl.style.color = 'var(--accent)';
+  errEl.textContent = `Connected as @${user.login} ✓`;
+
+  setTimeout(async () => {
+    document.getElementById('setup-overlay').classList.add('hidden');
+    await initSync();
+  }, 800);
+}
+
+// ── Sync ─────────────────────────────────────────────────────────
+async function initSync() {
+  setSyncStatus('Connecting...', '');
+  showSyncBar();
+
+  try {
+    let gistId = getStoredGistId();
+    if (!gistId) gistId = await findOrCreateGist();
+    if (!gistId) { setSyncStatus('Sync error', 'err'); return; }
+
+    await loadFromGist(gistId);
+  } catch(e) {
+    setSyncStatus('Offline – local only', 'err');
+  }
+}
+
+async function loadFromGist(gistId) {
+  setSyncStatus('Loading...', '');
+  const res = await ghFetch('/gists/' + gistId);
+  if (!res.ok) { setSyncStatus('Load failed', 'err'); return; }
+
+  const gist = await res.json();
+  const file = gist.files[GIST_FILENAME];
+  if (file && file.content) {
+    try {
+      const data = JSON.parse(file.content);
+      ['journal','selftalk','tasks','workouts','food','sleep'].forEach(key => {
+        if (data[key] !== undefined) localStorage.setItem(key, JSON.stringify(data[key]));
+      });
+    } catch(e) {}
+  }
+
+  setSyncStatus('Synced ✓', 'ok');
+  renderAll();
+}
+
+function scheduleSync() {
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(saveToGist, 2000);
+}
+
+async function saveToGist() {
+  if (isSyncing) return;
+  const gistId = getStoredGistId();
+  if (!gistId) return;
+
+  isSyncing = true;
+  showSyncBar();
+  setSyncStatus('Saving...', '');
+
+  const data = {};
+  ['journal','selftalk','tasks','workouts','food','sleep'].forEach(key => {
+    data[key] = DB.get(key);
+  });
+
+  try {
+    const res = await ghFetch('/gists/' + gistId, {
+      method: 'PATCH',
+      body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify(data) } } })
+    });
+    setSyncStatus(res.ok ? 'Saved to Gist ✓' : 'Save failed', res.ok ? 'ok' : 'err');
+  } catch(e) {
+    setSyncStatus('Offline – saved locally', 'err');
+  }
+  isSyncing = false;
+}
+
+function renderAll() {
+  renderJournal();
+  renderSelfTalk();
+  renderTasks();
+  renderWorkouts();
+  renderFood();
+  renderSleep();
+  renderDashboard();
+}
+
+// ── Navigation ───────────────────────────────────────────────────
+function navigate(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
+  });
+  if (id === 'dashboard') renderDashboard();
+}
+
+// ── Toast ────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── Mood ─────────────────────────────────────────────────────────
+let selectedMood = '';
+function selectMood(btn) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedMood = btn.textContent.trim();
+}
+
+// ── JOURNAL ──────────────────────────────────────────────────────
+function saveJournal() {
+  const date = document.getElementById('journal-date').value || today();
+  const time = document.getElementById('journal-time').value || getCurrentTime();
+  const why = document.getElementById('journal-why').value.trim();
+  if (!why) { showToast('Write something first.'); return; }
+  DB.push('journal', { id: uid(), date, time, mood: selectedMood, why, notes: document.getElementById('journal-notes').value.trim() });
+  document.getElementById('journal-why').value = '';
+  document.getElementById('journal-notes').value = '';
+  document.getElementById('journal-time').value = getCurrentTime();
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  selectedMood = '';
+  renderJournal();
+  showToast('Journal entry saved ✓');
+}
+
+function renderJournal() {
+  const entries = DB.get('journal');
+  const el = document.getElementById('journal-entries');
+  if (!entries.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📓</div>No journal entries yet.</div>'; return; }
+  el.innerHTML = entries.map(e => `
+    <div class="entry">
+      <div class="entry-meta">
+        <span class="entry-date">${fmtDate(e.date)}${e.time ? `<span class="entry-time">${e.time}</span>` : ''}</span>
+        ${e.mood ? `<span class="entry-tag tag-mental">${e.mood}</span>` : ''}
+      </div>
+      <div class="entry-body">${e.why.replace(/\n/g,'<br>')}${e.notes ? `<br><br><strong>Notes:</strong> ${e.notes.replace(/\n/g,'<br>')}` : ''}</div>
+      <div class="entry-actions">
+        <button class="btn btn-ghost btn-sm" onclick="deleteEntry('journal','${e.id}',renderJournal)">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── SELF-TALK ────────────────────────────────────────────────────
+function saveSelfTalk() {
+  const thought = document.getElementById('st-thought').value.trim();
+  if (!thought) { showToast('Write a thought first.'); return; }
+  DB.push('selftalk', {
+    id: uid(),
+    date: document.getElementById('st-date').value || today(),
+    time: document.getElementById('st-time').value || getCurrentTime(),
+    thought,
+    type: document.getElementById('st-type').value,
+    reframe: document.getElementById('st-reframe').value.trim()
+  });
+  document.getElementById('st-thought').value = '';
+  document.getElementById('st-reframe').value = '';
+  document.getElementById('st-time').value = getCurrentTime();
+  renderSelfTalk();
+  showToast('Self-talk entry saved ✓');
+}
+
+function renderSelfTalk() {
+  const entries = DB.get('selftalk');
+  const el = document.getElementById('st-entries');
+  const typeLabel = { negative: '⚠️ Critical', positive: '✨ Positive', neutral: '💬 Neutral' };
+  if (!entries.length) { el.innerHTML = '<div class="empty-state"><div class="icon">💭</div>No entries yet.</div>'; return; }
+  el.innerHTML = entries.map(e => `
+    <div class="entry">
+      <div class="entry-meta">
+        <span class="entry-date">${fmtDate(e.date)}${e.time ? `<span class="entry-time">${e.time}</span>` : ''}</span>
+        <span class="entry-tag tag-mental">${typeLabel[e.type]||e.type}</span>
+      </div>
+      <div class="entry-body">
+        <strong>Thought:</strong> ${e.thought.replace(/\n/g,'<br>')}
+        ${e.reframe ? `<br><br><strong>Reframe:</strong> ${e.reframe.replace(/\n/g,'<br>')}` : ''}
+      </div>
+      <div class="entry-actions">
+        <button class="btn btn-ghost btn-sm" onclick="deleteEntry('selftalk','${e.id}',renderSelfTalk)">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── PSYCH TASKS ──────────────────────────────────────────────────
+function saveTask() {
+  const text = document.getElementById('task-text').value.trim();
+  if (!text) { showToast('Add a task first.'); return; }
+  DB.push('tasks', {
+    id: uid(),
+    text,
+    priority: document.getElementById('task-priority').value,
+    recurrence: document.getElementById('task-recurrence').value || 'oneoff',
+    notes: document.getElementById('task-notes').value.trim(),
+    done: false,
+    completedDate: null
+  });
+  document.getElementById('task-text').value = '';
+  document.getElementById('task-notes').value = '';
+  renderTasks();
+  showToast('Task added ✓');
+}
+
+function toggleTask(id) {
+  const tasks = DB.get('tasks');
+  const t = tasks.find(t => t.id === id);
+  if (t) { t.done = !t.done; t.completedDate = t.done ? today() : null; }
+  DB.set('tasks', tasks);
+  scheduleSync();
+  renderTasks();
+}
+
+function renderTasks() {
+  const tasks = DB.get('tasks');
+  const el = document.getElementById('task-list');
+  const priLabel = { high: '🔴 High', med: '🟡 Medium', low: '🟢 Low' };
+  const recLabel = { oneoff: 'One-off', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
+  if (!tasks.length) { el.innerHTML = '<div class="empty-state"><div class="icon">✅</div>No tasks yet.</div>'; return; }
+  el.innerHTML = tasks.map(t => `
+    <div class="task-item">
+      <input type="checkbox" class="task-check" ${t.done ? 'checked' : ''} onchange="toggleTask('${t.id}')">
+      <div style="flex:1">
+        <div class="task-text ${t.done ? 'done' : ''}">${t.text} <span style="font-size:11px;color:var(--muted);margin-left:6px">${priLabel[t.priority]||''}</span>${t.recurrence && t.recurrence !== 'oneoff' ? `<span class="task-recurrence">${recLabel[t.recurrence]||t.recurrence}</span>` : ''}</div>
+        ${t.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:4px">${t.notes}</div>` : ''}
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="deleteEntry('tasks','${t.id}',renderTasks)" style="flex-shrink:0">Remove</button>
+    </div>`).join('');
+}
+
+// ── WORKOUTS ─────────────────────────────────────────────────────
+function saveWorkout() {
+  DB.push('workouts', {
+    id: uid(),
+    date: document.getElementById('wo-date').value || today(),
+    type: document.getElementById('wo-type').value,
+    duration: document.getElementById('wo-duration').value,
+    intensity: document.getElementById('wo-intensity').value,
+    feel: document.getElementById('wo-feel').value,
+    notes: document.getElementById('wo-notes').value.trim()
+  });
+  document.getElementById('wo-notes').value = '';
+  document.getElementById('wo-duration').value = '';
+  renderWorkouts();
+  showToast('Workout logged ✓');
+}
+
+function renderWorkouts() {
+  const entries = DB.get('workouts');
+  const el = document.getElementById('workout-entries');
+  if (!entries.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🏋️</div>No workouts logged yet.</div>'; return; }
+  el.innerHTML = entries.map(e => `
+    <div class="entry">
+      <div class="entry-meta">
+        <span class="entry-date">${fmtDate(e.date)}</span>
+        <span class="entry-tag tag-physical">${e.type}</span>
+      </div>
+      <div class="entry-body">
+        ${e.duration ? `<strong>${e.duration} min</strong> · ` : ''}${e.intensity} · ${e.feel}
+        ${e.notes ? `<br>${e.notes.replace(/\n/g,'<br>')}` : ''}
+      </div>
+      <div class="entry-actions">
+        <button class="btn btn-ghost btn-sm" onclick="deleteEntry('workouts','${e.id}',renderWorkouts)">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── FOOD ─────────────────────────────────────────────────────────
+function saveFood() {
+  const what = document.getElementById('food-what').value.trim();
+  if (!what) { showToast('Log what you ate first.'); return; }
+  DB.push('food', {
+    id: uid(),
+    date: document.getElementById('food-date').value || today(),
+    meal: document.getElementById('food-meal').value,
+    what,
+    cals: document.getElementById('food-cals').value,
+    feel: document.getElementById('food-feel').value,
+    notes: document.getElementById('food-notes').value.trim()
+  });
+  document.getElementById('food-what').value = '';
+  document.getElementById('food-cals').value = '';
+  document.getElementById('food-notes').value = '';
+  renderFood();
+  showToast('Meal logged ✓');
+}
+
+function renderFood() {
+  const entries = DB.get('food');
+  const el = document.getElementById('food-entries');
+  if (!entries.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🥗</div>No meals logged yet.</div>'; return; }
+  el.innerHTML = entries.map(e => `
+    <div class="entry">
+      <div class="entry-meta">
+        <span class="entry-date">${fmtDate(e.date)}</span>
+        <span class="entry-tag tag-food">${e.meal}</span>
+      </div>
+      <div class="entry-body">
+        ${e.what.replace(/\n/g,'<br>')}
+        ${e.cals ? `<br><strong>${e.cals} kcal</strong>` : ''} · ${e.feel}
+        ${e.notes ? `<br>${e.notes.replace(/\n/g,'<br>')}` : ''}
+      </div>
+      <div class="entry-actions">
+        <button class="btn btn-ghost btn-sm" onclick="deleteEntry('food','${e.id}',renderFood)">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── SLEEP ────────────────────────────────────────────────────────
+function saveSleep() {
+  DB.push('sleep', {
+    id: uid(),
+    date: document.getElementById('sleep-date').value || today(),
+    hours: document.getElementById('sleep-hours').value,
+    bed: document.getElementById('sleep-bed').value,
+    wake: document.getElementById('sleep-wake').value,
+    quality: document.getElementById('sleep-quality').value,
+    energy: document.getElementById('energy-level').value,
+    notes: document.getElementById('sleep-notes').value.trim()
+  });
+  document.getElementById('sleep-hours').value = '';
+  document.getElementById('sleep-notes').value = '';
+  renderSleep();
+  showToast('Sleep logged ✓');
+}
+
+function renderSleep() {
+  const entries = DB.get('sleep');
+  const el = document.getElementById('sleep-entries');
+  if (!entries.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🌙</div>No sleep logs yet.</div>'; return; }
+  el.innerHTML = entries.map(e => `
+    <div class="entry">
+      <div class="entry-meta">
+        <span class="entry-date">${fmtDate(e.date)}</span>
+        <span class="entry-tag tag-physical">${e.hours ? e.hours+'h sleep' : 'Sleep log'}</span>
+      </div>
+      <div class="entry-body">
+        ${e.bed && e.wake ? `${e.bed} → ${e.wake} · ` : ''}Quality: <strong>${e.quality}/10</strong> · Energy: <strong>${e.energy}/10</strong>
+        ${e.notes ? `<br>${e.notes.replace(/\n/g,'<br>')}` : ''}
+      </div>
+      <div class="entry-actions">
+        <button class="btn btn-ghost btn-sm" onclick="deleteEntry('sleep','${e.id}',renderSleep)">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────
+function filterDashboard(dateStr) {
+  currentFilterDate = dateStr || today();
+  document.getElementById('picker-date-display').textContent = fmtDate(currentFilterDate);
+  const dateDisplay = new Date(currentFilterDate + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+  document.getElementById('dashboard-subtitle').textContent = `Your daily snapshot for ${dateDisplay}`;
+  renderDashboard();
+}
+
+function renderDashboard() {
+  const journalToday = DB.get('journal').filter(e => e.date === currentFilterDate);
+  const selfTalkToday = DB.get('selftalk').filter(e => e.date === currentFilterDate);
+  const workoutsToday = DB.get('workouts').filter(e => e.date === currentFilterDate);
+  const foodToday = DB.get('food').filter(e => e.date === currentFilterDate);
+  const sleepToday = DB.get('sleep').filter(e => e.date === currentFilterDate);
+  const tasksLeft = DB.get('tasks').filter(t => !t.done);
+
+  document.getElementById('stat-journal').textContent = journalToday.length + selfTalkToday.length;
+  document.getElementById('stat-workouts').textContent = workoutsToday.length;
+  document.getElementById('stat-meals').textContent = foodToday.length;
+  document.getElementById('stat-tasks').textContent = tasksLeft.length + ' left';
+
+  const all = [
+    ...journalToday.map(e => ({ ...e, kind: 'Journal', color: 'tag-mental', navTo: 'journal' })),
+    ...selfTalkToday.map(e => ({ ...e, kind: 'Self-talk', color: 'tag-mental', navTo: 'selftalk' })),
+    ...workoutsToday.map(e => ({ ...e, kind: 'Workout', color: 'tag-physical', navTo: 'workouts' })),
+    ...foodToday.map(e => ({ ...e, kind: e.meal, color: 'tag-food', navTo: 'food' })),
+    ...sleepToday.map(e => ({ ...e, kind: 'Sleep', color: 'tag-physical', navTo: 'sleep' })),
+  ].sort((a,b) => b.id.localeCompare(a.id)).slice(0, 8);
+
+  const feed = document.getElementById('recent-feed');
+  if (!all.length) { feed.innerHTML = '<div class="empty-state"><div class="icon">📋</div>Nothing logged yet.</div>'; return; }
+  feed.innerHTML = all.map(e => `
+    <div class="recent-item" onclick="navigate('${e.navTo}')" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <span class="entry-tag ${e.color}" style="min-width:80px;text-align:center">${e.kind}</span>
+      <span style="font-size:12px;color:var(--muted);min-width:70px">${fmtDate(e.date)}</span>
+      <span style="font-size:13px;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${(e.why || e.thought || e.type || e.what || (e.hours ? e.hours+'h · Q:'+e.quality+'/10' : '') || '').slice(0,80)}
+      </span>
+    </div>`).join('');
+}
+
+// ── DELETE ───────────────────────────────────────────────────────
+function deleteEntry(store, id, renderFn) {
+  if (!confirm('Delete this entry?')) return;
+  DB.remove(store, id);
+  renderFn();
+  renderDashboard();
+  showToast('Deleted.');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  const now = new Date();
+  const nowTime = getCurrentTime();
+  document.getElementById('sidebar-date').textContent = now.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+
+  ['journal-date','st-date','wo-date','food-date','sleep-date'].forEach(id => {
+    document.getElementById(id).value = today();
+  });
+  ['journal-time','st-time'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = nowTime;
+  });
+
+  document.getElementById('picker-date-display').textContent = now.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+  document.getElementById('dashboard-date-picker').value = today();
+
+  // Reset recurring tasks
+  const tasks = DB.get('tasks');
+  let changed = false;
+  tasks.forEach(t => {
+    if (t.recurrence && t.recurrence !== 'oneoff' && t.done && t.completedDate && t.completedDate !== today()) {
+      t.done = false; t.completedDate = null; changed = true;
+    }
+  });
+  if (changed) DB.set('tasks', tasks);
+
+  renderAll();
+
+  // Check for stored token
+  if (getStoredToken()) {
+    document.getElementById('setup-overlay').classList.add('hidden');
+    await initSync();
+  }
+  // else: setup overlay stays visible
+});
+</script>
+</body>
+</html>
